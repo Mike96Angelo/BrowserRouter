@@ -179,20 +179,13 @@ var BrowserRouter =
 
 	        _.routes = [];
 
-	        _.root = fixPath(options.root);
+	        _.root = options.root ? fixPath(options.root) : null;
 
 	        _.mode = window.history ? (options.mode || 'path') : 'hash';
 
 	        if (_.mode === 'path') {
 	            window.addEventListener('popstate', function (e) {
-	                _.go(
-	                    _.unresolve(
-	                        window.location.pathname +
-	                        window.location.pathname.search +
-	                        window.location.pathname.hash
-	                    ),
-	                    true
-	                );
+	                _.go(null, true);
 	            }, false);
 	        } else {
 	            _._hashHandler = function (e) {
@@ -224,17 +217,11 @@ var BrowserRouter =
 	        var _ = this;
 
 	        if (_.mode === 'path') {
-	            _.go(
-	                _.unresolve(
-	                    window.location.pathname +
-	                    window.location.pathname.search +
-	                    window.location.pathname.hash
-	                ),
-	                true
-	            );
+	            _.go(null, true);
 	        } else {
 	            _.go(_.unresolve(window.location.hash.slice(1)), true);
 	        }
+
 	    },
 	    addRoute: function addRoute(route) {
 	        var _ = this;
@@ -284,17 +271,14 @@ var BrowserRouter =
 	            fullPath += hash;
 	        }
 
-
 	        if (_.mode === 'path') {
 	            if (!fromPopstate) {
-	                history.pushState(null, route.title, fullPath);
+	                history.pushState({
+	                    path: fullPath
+	                }, route.title, fullPath);
 	            }
 
-	            route.handleRoute(
-	                window.location.pathname,
-	                window.location.search,
-	                window.location.hash
-	            );
+	            route.handleRoute(path, search, hash);
 	        } else {
 	            if (!fromPopstate) {
 	                _.unbindHash();
@@ -305,32 +289,47 @@ var BrowserRouter =
 	                }, 0);
 	            }
 
-	            console.log(path, search, hash);
+	            // console.log(path, search, hash);
 
 	            route.handleRoute(path, search, hash);
 	        }
 
+	        _._path = path;
+	        _._search = search;
+	        _._hash = hash;
 	    },
-	    go: function go(path) {
+	    go: function go(path, fromPopstate) {
 	        var _ = this;
-
-	        var hashIndex = path.indexOf('#');
-	        var searchIndex = path.indexOf('?');
 
 	        var hash;
 	        var search;
 
-	        if (hashIndex !== -1) {
-	            hash = path.slice(hashIndex);
-	            path = path.slice(0, hashIndex);
-	        }
+	        if (path === null) {
+	            path = window.location.pathname;
+	            search = window.location.search;
+	            hash = window.location.hash;
+	        } else {
+	            var hashIndex = path.indexOf('#');
+	            var searchIndex = path.indexOf('?');
 
-	        if (searchIndex !== -1) {
-	            search = path.slice(searchIndex);
-	            path = path.slice(0, searchIndex);
+	            if (hashIndex !== -1) {
+	                hash = path.slice(hashIndex);
+	                path = path.slice(0, hashIndex);
+	            }
+
+	            if (searchIndex !== -1) {
+	                search = path.slice(searchIndex);
+	                path = path.slice(0, searchIndex);
+	            }
 	        }
 
 	        path = _.unresolve(_.resolve(path));
+
+	        if ( // if route is same current don't proceed.
+	            _._path === path &&
+	            _._search === search &&
+	            _._hash === hash
+	        ) return;
 
 	        var route = _.page404 || null;
 
@@ -342,7 +341,7 @@ var BrowserRouter =
 	        }
 
 	        if (route) {
-	            _._go(route, path, search, hash);
+	            _._go(route, path, search, hash, fromPopstate);
 	        } else {
 	            console.warn('Page Not Found: ' + path + ' - no 404 route set.');
 	        }
