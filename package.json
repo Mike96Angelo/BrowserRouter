@@ -1,0 +1,29 @@
+{
+  "name": "browser-app-router",
+  "version": "1.0.0",
+  "description": "A simple URL router for the browser, uses the browser history API falls back to hash-urls.",
+  "main": "browser-router.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mike96Angelo/BrowserRouter.git"
+  },
+  "keywords": [
+    "browser",
+    "router",
+    "url",
+    "history"
+  ],
+  "author": "Michaelangelo Jong",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Mike96Angelo/BrowserRouter/issues"
+  },
+  "homepage": "https://github.com/Mike96Angelo/BrowserRouter#readme",
+  "dependencies": {
+    "generate-js": "^3.1.2",
+    "query-string": "^4.3.1"
+  }
+}
