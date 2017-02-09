@@ -40,6 +40,10 @@ router.addRoute({
         //   hashString: '#bar=baz',
         //   hash: {bar: 'baz'},
         // }
+
+        // to redirect a route simply call router.go('/redirect/path')
+
+        // return false to cancel url change
     }
 });
 

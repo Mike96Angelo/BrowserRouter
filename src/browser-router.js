@@ -105,7 +105,7 @@ var BrowserRouter =
 	            hashString: hash
 	        };
 
-	        _.handler(req);
+	        return _.handler(req);
 	    },
 	    shouldTrigger: function shouldTrigger(path) {
 	        var _ = this,
@@ -258,6 +258,12 @@ var BrowserRouter =
 	    _go: function _go(route, path, search, hash, fromPopstate) {
 	        var _ = this;
 
+	        if (_._routeInProgress) {
+	            _._routeRedirect = route;
+	        }
+
+	        _._routeInProgress = route;
+
 	        document.title = route.title;
 
 	        path = _.resolve(path);
@@ -271,14 +277,18 @@ var BrowserRouter =
 	            fullPath += hash;
 	        }
 
+	        var proceed = route.handleRoute(path, search, hash);
+
+	        if (proceed === false || _._routeRedirect !== route) {
+	            return;
+	        }
+
 	        if (_.mode === 'path') {
 	            if (!fromPopstate) {
 	                history.pushState({
 	                    path: fullPath
 	                }, route.title, fullPath);
 	            }
-
-	            route.handleRoute(path, search, hash);
 	        } else {
 	            if (!fromPopstate) {
 	                _.unbindHash();
@@ -288,15 +298,14 @@ var BrowserRouter =
 	                    _.bindHash();
 	                }, 0);
 	            }
-
-	            // console.log(path, search, hash);
-
-	            route.handleRoute(path, search, hash);
 	        }
 
 	        _._path = path;
 	        _._search = search;
 	        _._hash = hash;
+
+	        delete _._routeInProgress;
+	        delete _._routeRedirect;
 	    },
 	    go: function go(path, fromPopstate) {
 	        var _ = this;
