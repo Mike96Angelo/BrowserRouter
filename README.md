@@ -33,6 +33,7 @@ router.addRoute({
         // handle route here
         // req => {
         //   title: 'title of route',
+        //   fullPath: '/path/of/route?foo=bar#bar=baz'
         //   path: '/path/of/route'
         //   params: {key => value},
         //   searchString: '?foo=bar',

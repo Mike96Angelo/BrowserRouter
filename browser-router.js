@@ -45,11 +45,12 @@ var Route = Generator.generate(
 );
 
 Route.definePrototype({
-    handleRoute: function handleRoute(path, query, hash) {
+    handleRoute: function handleRoute(path, query, hash, fullPath) {
         var _ = this;
 
         var req = {
             title: _.title,
+            fullPath: fullPath,
             path: path,
             params: _.parseParams(path),
             query: queryString.parse(query),
@@ -232,7 +233,7 @@ BrowserRouter.definePrototype({
             fullPath += hash;
         }
 
-        var proceed = route.handleRoute(path, search, hash);
+        var proceed = route.handleRoute(path, search, hash, fullPath);
 
         if (proceed === false || (_._routeRedirect && _._routeRedirect !== route)) {
             return;
