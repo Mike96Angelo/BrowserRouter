@@ -80,8 +80,10 @@ var BrowserRouter =
 	}
 
 	var Route = Generator.generate(
-	    function Route(options, is404) {
+	    function Route(options, router, is404) {
 	        var _ = this;
+
+	        _.router = router;
 
 	        _.pathString = fixPath(is404 ? '' : options.path);
 	        _.path = parsePathParams(_.pathString.split('/'));
@@ -92,7 +94,7 @@ var BrowserRouter =
 	);
 
 	Route.definePrototype({
-	    handleRoute: function handleRoute(path, query, hash, fullPath) {
+	    handleRoute: function handleRoute(path, search, hash, fullPath) {
 	        var _ = this;
 
 	        var req = {
@@ -100,11 +102,15 @@ var BrowserRouter =
 	            fullPath: fullPath,
 	            path: path,
 	            params: _.parseParams(path),
-	            query: queryString.parse(query),
-	            queryString: query,
+	            search: queryString.parse(search),
+	            searchString: search,
 	            hash: queryString.parse(hash),
 	            hashString: hash
 	        };
+
+	        if (_.router) {
+	            _.router.req = req;
+	        }
 
 	        return _.handler(req);
 	    },
@@ -226,7 +232,7 @@ var BrowserRouter =
 	    },
 	    addRoute: function addRoute(route) {
 	        var _ = this;
-	        _.routes.push(new Route(route));
+	        _.routes.push(new Route(route, _));
 
 	        _.routes.sort(function (a, b) {
 	            if (!a.hasParams && b.hasParams) return -1;
@@ -239,7 +245,7 @@ var BrowserRouter =
 	    set404: function set404(route) {
 	        var _ = this;
 
-	        _.page404 = new Route(route, true);
+	        _.page404 = new Route(route, _, true);
 	    },
 	    go404: function go404() {
 	        var _ = this;
