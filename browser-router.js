@@ -132,9 +132,9 @@ var BrowserRouter = Generator.generate(
 
         _.routes = [];
 
-        _.root = options.root ? fixPath(options.root) : null;
+        _.root = options && options.root ? fixPath(options.root) : null;
 
-        _.mode = window.history ? (options.mode || 'path') : 'hash';
+        _.mode = window.history ? ((options && options.mode) || 'path') : 'hash';
 
         if (_.mode === 'path') {
             window.addEventListener('popstate', function (e) {
@@ -211,8 +211,10 @@ BrowserRouter.definePrototype({
     _go: function _go(route, path, search, hash, fromPopstate) {
         var _ = this;
 
+        var isRedirect = false;
         if (_._routeInProgress) {
             _._routeRedirect = route;
+            isRedirect = true;
         }
 
         _._routeInProgress = route;
@@ -232,7 +234,7 @@ BrowserRouter.definePrototype({
 
         var proceed = route.handleRoute(path, search, hash);
 
-        if (proceed === false || _._routeRedirect !== route) {
+        if (proceed === false || (_._routeRedirect && _._routeRedirect !== route)) {
             return;
         }
 
@@ -257,8 +259,10 @@ BrowserRouter.definePrototype({
         _._search = search;
         _._hash = hash;
 
-        delete _._routeInProgress;
-        delete _._routeRedirect;
+        if (!isRedirect) {
+            delete _._routeInProgress;
+            delete _._routeRedirect;
+        }
     },
     go: function go(path, fromPopstate) {
         var _ = this;
