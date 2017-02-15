@@ -69,6 +69,9 @@ router.set404({
 router.start();
 // this inits the router and load the route at the current url.
 
+router.reload();
+// this reload the route at the current url without changing history.
+
 router.go('/path/to/route?search=search#hash=hash');
 // loads the route with the given url string.
 

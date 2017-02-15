@@ -143,16 +143,13 @@ var BrowserRouter = Generator.generate(
 
         _.mode = window.history ? ((options && options.mode) || 'path') : 'hash';
 
-        if (_.mode === 'path') {
-            window.addEventListener('popstate', function (e) {
-                _.go(null, true);
-            }, false);
-        } else {
-            _._hashHandler = function (e) {
-                console.log('yo');
-                _.go(_.unresolve(window.location.hash.slice(1)), true);
-            };
+        _._routeChangeHandler = function (e) {
+            _.go(null, true);
+        };
 
+        if (_.mode === 'path') {
+            window.addEventListener('popstate', _._routeChangeHandler, false);
+        } else {
             _.bindHash();
         }
     }
@@ -163,12 +160,12 @@ BrowserRouter.definePrototype({
     bindHash: function bindHash() {
         var _ = this;
 
-        window.addEventListener('hashchange', _._hashHandler, false);
+        window.addEventListener('hashchange', _._routeChangeHandler, false);
     },
     unbindHash: function unbindHash() {
         var _ = this;
 
-        window.removeEventListener('hashchange', _._hashHandler, false);
+        window.removeEventListener('hashchange', _._routeChangeHandler, false);
     }
 });
 
@@ -176,13 +173,15 @@ BrowserRouter.definePrototype({
     start: function start() {
         var _ = this;
 
-        if (_.mode === 'path') {
-            _.go(null, true);
-        } else {
-            _.go(_.unresolve(window.location.hash.slice(1)), true);
-        }
-
+        _.go(null, true);
     },
+
+    reload: function reload() {
+        var _ = this;
+
+        _.go(null, true);
+    },
+
     addRoute: function addRoute(route) {
         var _ = this;
         _.routes.push(new Route(route, _));
@@ -215,6 +214,7 @@ BrowserRouter.definePrototype({
             console.warn('Page Not Found: ' + path + ' - no 404 route set.');
         }
     },
+
     _go: function _go(route, path, search, hash, fromPopstate) {
         var _ = this;
 
@@ -278,10 +278,16 @@ BrowserRouter.definePrototype({
         var search;
 
         if (path === null) {
-            path = window.location.pathname;
-            search = window.location.search;
-            hash = window.location.hash;
-        } else {
+            if (_.mode === 'path') {
+                path = window.location.pathname;
+                search = window.location.search;
+                hash = window.location.hash;
+            } else {
+                path = _.unresolve(window.location.hash.slice(1));
+            }
+        }
+
+        if (!search && !hash) {
             var hashIndex = path.indexOf('#');
             var searchIndex = path.indexOf('?');
 
