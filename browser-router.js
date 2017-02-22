@@ -226,7 +226,9 @@ BrowserRouter.definePrototype({
 
         _._routeInProgress = route;
 
-        document.title = route.title;
+        if (typeof route.title !== 'undefined') {
+            document.title = route.title;
+        }
 
         path = _.resolve(path);
         var fullPath = path;
