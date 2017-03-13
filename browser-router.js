@@ -47,7 +47,7 @@ var Route = Generator.generate(
 );
 
 Route.definePrototype({
-    handleRoute: function handleRoute(path, search, hash, fullPath) {
+    handleRoute: function handleRoute(path, search, hash, fullPath, noGo) {
         var _ = this;
 
         var req = {
@@ -63,6 +63,10 @@ Route.definePrototype({
 
         if (_.router) {
             _.router.req = req;
+        }
+
+        if (noGo) {
+            return false;
         }
 
         return _.handler(req);
@@ -170,10 +174,10 @@ BrowserRouter.definePrototype({
 });
 
 BrowserRouter.definePrototype({
-    start: function start() {
+    start: function start(noGo) {
         var _ = this;
 
-        _.go(null, true);
+        _.go(null, true, noGo);
     },
 
     reload: function reload() {
@@ -215,7 +219,7 @@ BrowserRouter.definePrototype({
         }
     },
 
-    _go: function _go(route, path, search, hash, fromPopstate) {
+    _go: function _go(route, path, search, hash, fromPopstate, noGo) {
         var _ = this;
 
         var isRedirect = false;
@@ -241,7 +245,7 @@ BrowserRouter.definePrototype({
             fullPath += hash;
         }
 
-        var proceed = route.handleRoute(path, search, hash, fullPath);
+        var proceed = route.handleRoute(path, search, hash, fullPath, noGo);
 
         if (proceed === false || (_._routeRedirect && _._routeRedirect !== route)) {
             return;
@@ -273,7 +277,7 @@ BrowserRouter.definePrototype({
             delete _._routeRedirect;
         }
     },
-    go: function go(path, fromPopstate) {
+    go: function go(path, fromPopstate, noGo) {
         var _ = this;
 
         var hash;
@@ -322,7 +326,7 @@ BrowserRouter.definePrototype({
         }
 
         if (route) {
-            _._go(route, path, search, hash, fromPopstate);
+            _._go(route, path, search, hash, fromPopstate, noGo);
         } else {
             console.warn('Page Not Found: ' + path + ' - no 404 route set.');
         }
