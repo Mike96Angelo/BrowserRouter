@@ -78,4 +78,14 @@ router.go('/path/to/route?search=search#hash=hash');
 router.go404();
 // loads the 404 route with the current url.
 
+
+// return a message if a user should be warned about leaving the page.
+// NOTE: this will not prevent the user from leaving if the choose to leave.
+// event is the beforeunload event if user manually changes the url.
+router.beforeRouteChange = function (event) {
+    if (unsavedChanges) {
+        return 'You have unsaved changes, are you sure you want to leave?';
+    }
+}
+
 ```

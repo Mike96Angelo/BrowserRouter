@@ -156,11 +156,12 @@ var BrowserRouter = Generator.generate(
         } else {
             _.bindHash();
         }
+
+        window.addEventListener('beforeunload', _._beforeRouteChange.bind(_), false);
     }
 );
 
 BrowserRouter.definePrototype({
-
     bindHash: function bindHash() {
         var _ = this;
 
@@ -173,7 +174,33 @@ BrowserRouter.definePrototype({
     }
 });
 
+function noop() {}
+
 BrowserRouter.definePrototype({
+    writable: true
+}, {
+    beforeRouteChange: noop
+});
+
+BrowserRouter.definePrototype({
+    _beforeRouteChange: function _beforeRouteChange(evt) {
+        var _ = this;
+        var event = evt || {};
+
+        var result = _.beforeRouteChange(event);
+
+        if (result) {
+            event.returnValue = result;
+        }
+
+        if (!evt && event.returnValue) {
+            var con = confirm(event.returnValue);
+
+            return con ? void(0) : event.returnValue;
+        }
+
+        return result ? result : void(0);
+    },
     start: function start(noGo) {
         var _ = this;
 
@@ -245,7 +272,11 @@ BrowserRouter.definePrototype({
             fullPath += hash;
         }
 
-        var proceed = route.handleRoute(path, search, hash, fullPath, noGo);
+        var proceed = _._beforeRouteChange() ? false : true;
+
+        if (proceed) {
+            proceed = route.handleRoute(path, search, hash, fullPath, noGo);
+        }
 
         if (proceed === false || (_._routeRedirect && _._routeRedirect !== route)) {
             return;
